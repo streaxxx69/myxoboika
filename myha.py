@@ -41,13 +41,7 @@ def missclick():
         update_points()
         play_sound_fail()
 
-def spawn():
-    for i in range(100):
-        x = randint(1, 400)
-        y = randint(1, 400)
-        if abs(mouse_x - x) > 200 or abs(mouse_y - y) > 200:
-            break
-    canvas.moveto(npc_id, x, y)
+
 
 def game_update():
     global canvas
@@ -89,14 +83,27 @@ def hide_start_screen():
     canvas.delete(start_message)
     start_game()
 
+def spawn():
+    global npc_id
+    for i in range(100):
+        x = randint(0, game_width - npc_width)
+        y = randint(0, game_height - npc_height)
+        if abs(mouse_x - x) > 200 or abs(mouse_y - y) > 200:
+            canvas.moveto(npc_id, x, y)
+            canvas.itemconfig(npc_id, state='normal')  # Показываем изображение при спавне
+            break
+
 def start_game():
     global game_time_left, gameover
-    game_time_left = 30000
+    score = 0  # Сбросим счёт в начале игры
+    game_time_left = 5000
     gameover = False
     canvas.config(bg="white")
-    canvas.itemconfig(npc_id, state='normal')  # Показываем изображение при старте игры
+    update_points()  # Обновляем отображение счёта
+    spawn()  # Сначала мы спавним муху
     update_timer()
     game_update()
+
 
 def update_timer():
     global game_time_left
@@ -110,9 +117,10 @@ def update_timer():
 def end_game():
     global gameover
     gameover = True
-    canvas.config(bg="pink")
-    canvas.delete("all")
-    final_score_label = Label(canvas, text=f"Конец игры!\nВаш счёт: {score}", font="Arial 40", fg="white", bg="pink")
+    # canvas.config(bg="pink")
+    # canvas.delete("all")
+    canvas.itemconfig(fon, state='normal')
+    final_score_label = Label(canvas, text=f"Конец игры!\nВаш счёт: {score}", font="Arial 40")
     final_score_label.place(relx=0.5, rely=0.5, anchor=CENTER)
 
 game_width = 720
@@ -136,17 +144,24 @@ canvas.itemconfig(npc_id, state='hidden')  # Скрываем изображен
 timer_label = Label(canvas, text="", font="Arial 16", fg="black", bg="white")
 timer_label.place(x=10, y=10)
 
+
+
+
+
+
+screamer_image = PhotoImage(file='screamer.png')
+screamer_id = canvas.create_image(0, 0, image=screamer_image,
+                                  anchor=NW)
+canvas.itemconfig(screamer_id, state='hidden')
+
+background_image = PhotoImage(file='forest.png')
+fon  = canvas.create_image(0, 0, image=background_image, anchor=NW, state='hidden')
 text_id = canvas.create_text(
     game_width - 10, 10,
     fill='black',
     font='Times 20 bold',
     text=f'Очки: {score}',
     anchor=NE)
-
-screamer_image = PhotoImage(file='screamer.png')
-screamer_id = canvas.create_image(0, 0, image=screamer_image,
-                                  anchor=NW)
-canvas.itemconfig(screamer_id, state='hidden')
 
 canvas.bind('<Button>', mouse_click)
 canvas.bind('<Motion>', mouse_motion)
